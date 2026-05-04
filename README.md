@@ -1,9 +1,8 @@
 # codeartifact-maven-extension
 
-![maven](https://img.shields.io/maven-central/v/io.dangernoodle/codeartifact-maven-extension)
-[![maven-build](https://github.com/dangernoodle-io/codeartifact-maven-extension/actions/workflows/maven-build.yml/badge.svg)](https://github.com/dangernoodle-io/codeartifact-maven-extension/actions/workflows/maven-build.yml)
-[![maven-release](https://github.com/dangernoodle-io/codeartifact-maven-extension/actions/workflows/maven-release.yml/badge.svg)](https://github.com/dangernoodle-io/codeartifact-maven-extension/actions/workflows/maven-release.yml)
-[![Coverage Status](https://coveralls.io/repos/github/dangernoodle-io/codeartifact-maven-extension/badge.svg?branch=main)](https://coveralls.io/github/dangernoodle-io/codeartifact-maven-extension?branch=main)
+Fork of https://github.com/dangernoodle-io/codeartifact-maven-extension
+
+![maven](https://img.shields.io/maven-central/v/dev.bcmedeiros/codeartifact-maven-extension)
 
 Maven `build` extension that provides a [resolver](https://maven.apache.org/resolver/index.html) and 
 [wagon](https://maven.apache.org/wagon/index.html) implementation capable of authenticating against 
@@ -21,7 +20,7 @@ for more details) like so:
 <extensions xmlns="http://maven.apache.org/EXTENSIONS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/EXTENSIONS/1.0.0 http://maven.apache.org/xsd/core-extensions-1.0.0.xsd">
   <extension>
-     <groupId>io.dangernoodle</groupId>
+     <groupId>dev.bcmedeiros</groupId>
      <artifactId>codeartifact-maven-extension</artifactId>
      <version>${codeartifact-maven-extension.version}</version>
   </extension>
@@ -37,7 +36,7 @@ your project's pom:
 <build>
   <extensions>
     <extension>
-      <groupId>io.dangernoodle</groupId>
+      <groupId>dev.bcmedeiros</groupId>
       <artifactId>codeartifact-maven-extension</artifactId>
       <version>${codeartifact-maven-extension.version}</version>
     </extension>
