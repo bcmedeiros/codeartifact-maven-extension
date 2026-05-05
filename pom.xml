@@ -5,7 +5,7 @@
   <groupId>dev.bcmedeiros</groupId>
   <artifactId>codeartifact-maven-extension</artifactId>
   <name>${project.artifactId}</name>
-  <version>0.6.1-SNAPSHOT</version>
+  <version>0.6.1</version>
 
   <url>https://github.com/bcmedeiros/codeartifact-maven-extension</url>
   <description>codeartifact authentication prior to downloads/uploads</description>
@@ -30,7 +30,7 @@
     <connection>scm:git:git@github.com:bcmedeiros/codeartifact-maven-extension.git</connection>
     <developerConnection>scm:git:git@github.com:bcmedeiros/codeartifact-maven-extension.git</developerConnection>
     <url>https://github.com/bcmedeiros/codeartifact-maven-extension</url>
-    <tag>HEAD</tag>
+    <tag>v0.6.1</tag>
   </scm>
 
   <issueManagement>
