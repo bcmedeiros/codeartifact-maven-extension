@@ -99,6 +99,11 @@ value wins:
        </activeProfiles>
    </settings>
    ```
+4. **Active `settings.xml` profile property** with the same name `codeartifact.aws.profile`. As a fallback
+   for cases where the property has not been merged into the effective project properties (for example
+   when no `pom.xml` is loaded yet, or for early-phase invocations), the extension also inspects the
+   active profiles in `settings.xml` directly. Profiles activated via `<activeProfiles>` in
+   `settings.xml` and via `-P<profile>` on the command line are both considered.
 
 Static credentials configured via a `<server>` entry (see above) take precedence over any profile resolution. If
 none of the profile sources is set and no static credentials are configured, the extension falls back to the

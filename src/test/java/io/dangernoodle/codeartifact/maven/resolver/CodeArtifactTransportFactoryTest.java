@@ -18,8 +18,11 @@ import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Profile;
+import org.apache.maven.settings.Settings;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.Authentication;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -35,6 +38,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.inject.Provider;
+import java.util.Collections;
 import java.util.Properties;
 
 
@@ -68,6 +72,12 @@ public class CodeArtifactTransportFactoryTest
 
     @Mock
     private MavenProject mockProject;
+
+    @Mock
+    private Settings mockSettings;
+
+    @Mock
+    private MavenExecutionRequest mockRequest;
 
     private Provider<MavenSession> sessionProvider;
 
@@ -190,6 +200,37 @@ public class CodeArtifactTransportFactoryTest
     }
 
     @Test
+    public void testProfileCredentialsFromSettingsActiveProfile() throws Exception
+    {
+        givenAUrlThatIsCodeArtifact();
+        givenAProfileInSettingsActiveProfile(AWS_PROFILE);
+        whenCreateTransportFactory();
+        thenCredentialsAreGenerated();
+        thenPassedCredentialsContainProfile();
+    }
+
+    @Test
+    public void testProfileCredentialsFromRequestActiveProfile() throws Exception
+    {
+        givenAUrlThatIsCodeArtifact();
+        givenAProfileInRequestActiveProfile(AWS_PROFILE);
+        whenCreateTransportFactory();
+        thenCredentialsAreGenerated();
+        thenPassedCredentialsContainProfile();
+    }
+
+    @Test
+    public void testProjectPropertyTakesPrecedenceOverActiveProfile() throws Exception
+    {
+        givenAUrlThatIsCodeArtifact();
+        givenAProfileProjectProperty();
+        givenAProfileInSettingsActiveProfile("other-profile");
+        whenCreateTransportFactory();
+        thenCredentialsAreGenerated();
+        thenPassedCredentialsContainProfile();
+    }
+
+    @Test
     public void testStaticCredentialsTakePresentsOverProfileCredentials() throws Exception
     {
         givenAUrlThatIsCodeArtifact();
@@ -263,6 +304,34 @@ public class CodeArtifactTransportFactoryTest
         properties.setProperty(CodeArtifact.AWS_PROFILE_PROJECT_PROPERTY_NAME, value);
         lenient().when(mockMavenSession.getCurrentProject()).thenReturn(mockProject);
         lenient().when(mockProject.getProperties()).thenReturn(properties);
+    }
+
+    private void givenAProfileInSettingsActiveProfile(String value)
+    {
+        Profile profile = createSettingsProfile("local", value);
+        lenient().when(mockMavenSession.getSettings()).thenReturn(mockSettings);
+        lenient().when(mockSettings.getActiveProfiles()).thenReturn(Collections.singletonList("local"));
+        lenient().when(mockSettings.getProfiles()).thenReturn(Collections.singletonList(profile));
+    }
+
+    private void givenAProfileInRequestActiveProfile(String value)
+    {
+        Profile profile = createSettingsProfile("cli", value);
+        lenient().when(mockMavenSession.getSettings()).thenReturn(mockSettings);
+        lenient().when(mockMavenSession.getRequest()).thenReturn(mockRequest);
+        lenient().when(mockSettings.getActiveProfiles()).thenReturn(Collections.<String>emptyList());
+        lenient().when(mockSettings.getProfiles()).thenReturn(Collections.singletonList(profile));
+        lenient().when(mockRequest.getActiveProfiles()).thenReturn(Collections.singletonList("cli"));
+    }
+
+    private Profile createSettingsProfile(String id, String value)
+    {
+        Profile profile = new Profile();
+        profile.setId(id);
+        Properties properties = new Properties();
+        properties.setProperty(CodeArtifact.AWS_PROFILE_PROJECT_PROPERTY_NAME, value);
+        profile.setProperties(properties);
+        return profile;
     }
 
     private void thenCredentialsAreGenerated()
