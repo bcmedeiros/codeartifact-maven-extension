@@ -1,8 +1,10 @@
 package io.dangernoodle.codeartifact.maven.resolver;
 
 import io.dangernoodle.codeartifact.maven.CodeArtifact;
+import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.settings.Settings;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.AuthenticationContext;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -15,7 +17,10 @@ import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 
 /**
@@ -85,20 +90,28 @@ public class CodeArtifactTransportFactory implements TransporterFactory
         if (profileFromEnv != null) {
             return profileFromEnv;
         }
-        return getAwsProfileFromProject();
+        final String profileFromProject = getAwsProfileFromProject();
+        if (profileFromProject != null) {
+            return profileFromProject;
+        }
+        return getAwsProfileFromActiveProfiles();
     }
 
-    private String getAwsProfileFromProject()
+    private MavenSession getMavenSession()
     {
         if (sessionProvider == null) {
             return null;
         }
-        MavenSession session;
         try {
-            session = sessionProvider.get();
+            return sessionProvider.get();
         } catch (RuntimeException ex) {
             return null;
         }
+    }
+
+    private String getAwsProfileFromProject()
+    {
+        MavenSession session = getMavenSession();
         if (session == null) {
             return null;
         }
@@ -111,6 +124,44 @@ public class CodeArtifactTransportFactory implements TransporterFactory
             return null;
         }
         return properties.getProperty(CodeArtifact.AWS_PROFILE_PROJECT_PROPERTY_NAME);
+    }
+
+    private String getAwsProfileFromActiveProfiles()
+    {
+        MavenSession session = getMavenSession();
+        if (session == null) {
+            return null;
+        }
+        Settings settings = session.getSettings();
+        if (settings == null) {
+            return null;
+        }
+        Set<String> activeIds = new HashSet<>();
+        List<String> settingsActive = settings.getActiveProfiles();
+        if (settingsActive != null) {
+            activeIds.addAll(settingsActive);
+        }
+        MavenExecutionRequest request = session.getRequest();
+        if (request != null && request.getActiveProfiles() != null) {
+            activeIds.addAll(request.getActiveProfiles());
+        }
+        if (activeIds.isEmpty()) {
+            return null;
+        }
+        for (org.apache.maven.settings.Profile profile : settings.getProfiles()) {
+            if (!activeIds.contains(profile.getId())) {
+                continue;
+            }
+            Properties properties = profile.getProperties();
+            if (properties == null) {
+                continue;
+            }
+            String value = properties.getProperty(CodeArtifact.AWS_PROFILE_PROJECT_PROPERTY_NAME);
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private boolean areKeysSet(AuthenticationContext context)
